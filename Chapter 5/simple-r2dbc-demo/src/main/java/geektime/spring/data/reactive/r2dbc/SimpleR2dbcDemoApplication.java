@@ -39,7 +39,9 @@ public class SimpleR2dbcDemoApplication extends AbstractR2dbcConfiguration
 	@Bean
 	public ConnectionFactory connectionFactory() {
 		return new H2ConnectionFactory(
+				// 构建一个H2的连接工厂
 				H2ConnectionConfiguration.builder()
+						// SpringBoot配置中内存数据库名="testdb"，用户名="sa"
 						.inMemory("testdb")
 						.username("sa")
 						.build());
