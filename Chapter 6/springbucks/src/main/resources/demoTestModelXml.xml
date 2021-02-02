@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<XMLTestModelSchema>
+    <ABDAPOLICY>
+        <CURRENCY_ID>10086</CURRENCY_ID>
+        <GENERATIO_DET_DT>2017-08-26 03:39:30</GENERATIO_DET_DT>
+        <PARTICIPATION_FG>true</PARTICIPATION_FG>
+        <ABDAPOLPRS>
+            <ABDAPOLPR>
+                <ACTINACTST_CD>ACTINACTSTCDTESTYQ1</ACTINACTST_CD>
+                <APPLNR_TT>testyangqi1</APPLNR_TT>
+                <CPSPOS_FG>true</CPSPOS_FG>
+            </ABDAPOLPR>
+            <ABDAPOLPR>
+                <ACTINACTST_CD>ACTINACTSTCDTESTYQ2</ACTINACTST_CD>
+                <APPLNR_TT>testyangqi2</APPLNR_TT>
+                <CPSPOS_FG>false</CPSPOS_FG>
+            </ABDAPOLPR>
+        </ABDAPOLPRS>
+    </ABDAPOLICY>
+</XMLTestModelSchema>

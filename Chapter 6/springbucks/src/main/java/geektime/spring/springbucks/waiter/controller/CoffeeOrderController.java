@@ -29,6 +29,7 @@ public class CoffeeOrderController {
     @GetMapping("/{id}")
     public CoffeeOrder getOrder(@PathVariable("id") Long id) {
         CoffeeOrder order = orderService.get(id);
+        log.debug("test logger out put !!!!!");
         log.info("Get Order: {}", order);
         return order;
     }
