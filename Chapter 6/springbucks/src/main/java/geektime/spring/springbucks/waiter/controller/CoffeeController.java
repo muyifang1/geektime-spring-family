@@ -77,12 +77,14 @@ public class CoffeeController {
 
     @GetMapping(path = "/", params = "!name")
     public List<Coffee> getAll() {
+        log.debug("test logger out put getAll!!!!!");
         return coffeeService.getAllCoffee();
     }
 
     @GetMapping("/{id}")
     public Coffee getById(@PathVariable Long id) {
         Coffee coffee = coffeeService.getCoffee(id);
+        log.debug("test logger out put !!!!!");
         log.info("Coffee {}:", coffee);
         return coffee;
     }

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ORDER>
+    <ORDER_NO>10086</ORDER_NO>
+    <TOTAL_PRICE>3.14</TOTAL_PRICE>
+    <CREATE_TIME>2017-08-26 03:39:30</CREATE_TIME>
+    <ORDER_ITEMS>
+        <ORDER_ITEM>
+            <GOODS_NAME> 德芙 </GOODS_NAME>
+            <NUM>3</NUM>
+        </ORDER_ITEM>
+        <ORDER_ITEM>
+            <GOODS_NAME> 旺仔 </GOODS_NAME>
+            <NUM>10</NUM>
+        </ORDER_ITEM>
+    </ORDER_ITEMS>
+</ORDER>
