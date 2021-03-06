@@ -10,17 +10,22 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.HashMap;
-import java.util.Stack;
+import java.util.*;
 
 public class ReadExcel {
 
-    String excelPath = "C:\\Users\\qi.b.yang\\OneDrive - Accenture\\Desktop\\sample.xlsx";
+    String excelPath = "C:\\Users\\Administrator\\Desktop\\sample.xlsx";
 
     // 维护一个 对象节点 hashmap
     HashMap<String, Node> complexHashMap = new HashMap<>();
-    // 用一个Stack维护 父节点
-    Stack<Node> complexStack = new Stack<>();
+    // 维护一个 level, nodeName
+    HashMap<String,String> levelNameHashMap = new HashMap<>();
+
+    Node rootNode = Node.builder().name("Root").build();
+    // 记录当前所在结构体的 父节点 nodeName
+    String parentNodeName = "Root";
+
+    List<List<Node>> levelResult = new ArrayList();
 
     private void readExcel(){
         try {
@@ -48,15 +53,18 @@ public class ReadExcel {
                     Sheet sheet = wb.getSheet("(HEC) IN OUT");
                     //第一行是列名，所以不读 // 测试 从 5 开始读是 pcXXXWSRequest
                     int firstRowIndex = 5;
-                    int lastRowIndex = sheet.getLastRowNum();
+//                    int lastRowIndex = sheet.getLastRowNum();
+                    int lastRowIndex = 351;
                     System.out.println("firstRowIndex: "+firstRowIndex);
                     System.out.println("lastRowIndex: "+lastRowIndex);
 
                     // 记录前一条记录的 nodeName 单元格列号
                     int preColumnIndex = 0;
-                    Node preNode = Node.builder().build();
-                    // 记录当前所在结构体的 父节点 nodeName
-    //                String parentNodeName = "rootNoParent";
+
+                    // 首次执行为空
+                    if(complexHashMap.isEmpty()){
+                        complexHashMap.put("Root",rootNode);
+                    }
 
                     //遍历行
                     for(int rIndex = firstRowIndex; rIndex <= lastRowIndex; rIndex++) {
@@ -79,49 +87,27 @@ public class ReadExcel {
                                     String max = row.getCell(15).toString();
 
                                     Node tempNode = Node.builder().name(nodeName)
-    //                                        .parentName(parentNodeName)
                                             .type(type)
                                             .minOccurs(min)
                                             .maxOccurs(max).build();
-                                    // 首次执行为空
-                                    if(complexHashMap.isEmpty() && "complex".equals(type)){
+
+                                    // 维护level Name HashMap
+                                    levelNameHashMap.put(String.valueOf(cIndex),nodeName);
+                                    if("complex".equals(type)){
                                         complexHashMap.put(nodeName,tempNode);
-                                        complexStack.push(tempNode);
+                                    }
+                                    if (cIndex >1) {
+                                        parentNodeName = levelNameHashMap.get(String.valueOf(cIndex - 1));
                                     }
 
-                                    System.out.println("前一条记录列号：" + preColumnIndex +" tempNode = " + tempNode);
+//                                    rootNode.mergeNode(parentNodeName,tempNode);
+                                    this.mergeSubNode(parentNodeName,rootNode,tempNode);
 
-                                    Node parent = complexStack.peek();
-
-                                    // 当前节点是前序节点的子节点
-                                    if(cIndex > preColumnIndex){
-
-                                        if("complex".equals(type)){
-                                            parent.addKids(tempNode);
-                                        }else{
-                                            parent.addFields(tempNode);
-                                        }
-                                        complexHashMap.put(parent.getName(),parent);
-                                    } else if (preColumnIndex > cIndex){
-                                        // 当前节点是一个新的 complex 结构体
-                                        complexStack.pop();
-                                        complexStack.push(tempNode);
-                                        parent = complexStack.peek();
-                                        complexHashMap.put(parent.getName(),tempNode);
-                                    } else {
-                                        // 当前节点和前序节点平级
-                                        // 设置父节点，前序节点的父节点
-                                        if("complex".equals(type)){
-                                            parent.addKids(tempNode);
-                                            complexStack.push(tempNode);
-                                        }else{
-                                            parent.addFields(tempNode);
-                                        }
-                                        complexHashMap.put(parent.getName(),parent);
-                                    }
+                                    System.out.println("前一条记录列号：" + preColumnIndex
+                                            + " parentName = "+ parentNodeName
+                                            + " currentName = " + tempNode.getName());
 
                                     preColumnIndex = cIndex;
-                                    preNode = tempNode;
                                 }
                             }
                         }
@@ -134,11 +120,99 @@ public class ReadExcel {
         }
     }
 
+    public Node findNode(Node root, String searchKey){
+        Node result = null;
+        Queue<Node> queue = new ArrayDeque<>();
+
+        queue.add(root);
+
+        while(queue.size()!=0){
+            Node tempNode = queue.poll();
+            if(searchKey.equals(tempNode.getName())){
+                result = tempNode;
+                break;
+            }
+
+            if(tempNode.getKids() != null && !tempNode.getKids().isEmpty()){
+                tempNode.getKids().forEach((k,v)->queue.add(v));
+            }
+        }
+
+        return result;
+    }
+
+    public Node mergeSubNode(String parentName,Node root, Node subNode){
+        Node parent = this.findNode(root,parentName);
+        if("complex".equals(subNode.getType())){
+            parent.addKids(subNode);
+        }else {
+            parent.addFields(subNode);
+        }
+
+        return parent;
+    }
+
+    public List<Node> dfsOrder(Node root){
+        List<Node> resList = new ArrayList<>();
+        Queue<Node> queue = new ArrayDeque<>();
+
+        if(root != null){
+            queue.add(root);
+        }
+
+        while(!queue.isEmpty()){
+            // 弹出父节点，并且直接插入结果
+            Node node = queue.poll();
+            resList.add(node);
+
+            // 该层级下的fields
+            if(node.getFields() != null && !node.getFields().isEmpty()){
+                node.getFields().forEach((k,v)->queue.add(v));
+            }
+
+            if(node.getKids() != null && !node.getKids().isEmpty()){
+                node.getKids().forEach((k,v)->queue.add(v));
+            }
+        }
+
+        return resList;
+    }
+
+    /**
+     * 递归实现 levelOrder 层遍历
+     * levelResult
+     */
+    public List<List<Node>> levelOrder(Node root) {
+        if (root != null) traverseNode(root, 0);
+        return levelResult;
+    }
+
+    private void traverseNode(Node node, int level) {
+        if (levelResult.size() <= level) {
+            levelResult.add(new ArrayList<>());
+        }
+        levelResult.get(level).add(node);
+
+        if(node.getKids() != null && !node.getKids().isEmpty()){
+            node.getKids().forEach((k,v)->traverseNode(v,level+1));
+        }
+    }
+
     public static void main(String[] args) {
         ReadExcel readExcel = new ReadExcel();
         readExcel.readExcel();
 
         System.out.println("readExcel.complexHashMap.size() = " + readExcel.complexHashMap.size());
+
+        System.out.println("root = " + readExcel.rootNode);
+
+        List<Node> resList = new ArrayList<>();
+        resList = readExcel.dfsOrder(readExcel.rootNode);
+        resList.forEach((node -> System.out.println("node.getName() = " + node.getName())));
+
+        // 层遍历
+        readExcel.traverseNode(readExcel.rootNode,0);
+        System.out.println("readExcel.levelResult = " + readExcel.levelResult);
     }
 
 }

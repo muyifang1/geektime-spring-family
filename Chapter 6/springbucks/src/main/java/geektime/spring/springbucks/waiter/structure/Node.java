@@ -4,9 +4,7 @@ import lombok.*;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 @Builder
 @Data
@@ -23,8 +21,6 @@ public class Node {
     private String minOccurs;
 
     private String maxOccurs;
-
-    private Node parent;
 
     // 子节点
     private HashMap<String,Node> kids;
@@ -48,4 +44,5 @@ public class Node {
         // todo 这里可以判定重复，对比是否一致，来校验文档是否自洽
         fields.put(field.name,field);
     }
+
 }
