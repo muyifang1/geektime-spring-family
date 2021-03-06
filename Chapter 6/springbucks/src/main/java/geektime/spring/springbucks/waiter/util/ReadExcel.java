@@ -1,5 +1,6 @@
 package geektime.spring.springbucks.waiter.util;
 
+import geektime.spring.springbucks.waiter.TestDemo;
 import geektime.spring.springbucks.waiter.structure.Node;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -8,9 +9,9 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ReadExcel {
 
@@ -26,6 +27,8 @@ public class ReadExcel {
     String parentNodeName = "Root";
 
     List<List<Node>> levelResult = new ArrayList();
+
+    List<Node> resultList = new ArrayList<>();
 
     private void readExcel(){
         try {
@@ -183,7 +186,9 @@ public class ReadExcel {
      * levelResult
      */
     public List<List<Node>> levelOrder(Node root) {
-        if (root != null) traverseNode(root, 0);
+        if (root != null) {
+            traverseNode(root, 0);
+        }
         return levelResult;
     }
 
@@ -198,7 +203,27 @@ public class ReadExcel {
         }
     }
 
-    public static void main(String[] args) {
+    /**
+     * 递归实现 resultList
+     */
+    public void createResList(Node node){
+
+        if(node == null){
+            return;
+        }
+
+        resultList.add(node);
+
+        if(node.getFields() != null && !node.getFields().isEmpty()){
+            node.getFields().forEach((k,v)->resultList.add(v));
+        }
+
+        if(node.getKids() != null && !node.getKids().isEmpty()){
+            node.getKids().forEach((k,v)->createResList(v));
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
         ReadExcel readExcel = new ReadExcel();
         readExcel.readExcel();
 
@@ -206,13 +231,23 @@ public class ReadExcel {
 
         System.out.println("root = " + readExcel.rootNode);
 
-        List<Node> resList = new ArrayList<>();
-        resList = readExcel.dfsOrder(readExcel.rootNode);
-        resList.forEach((node -> System.out.println("node.getName() = " + node.getName())));
+//        List<Node> resList = new ArrayList<>();
+//        resList = readExcel.dfsOrder(readExcel.rootNode);
+//        resList.forEach((node -> System.out.println("node.getName() = " + node.getName())));
+//
+//        // 层遍历
+//        readExcel.traverseNode(readExcel.rootNode,0);
+//        System.out.println("readExcel.levelResult = " + readExcel.levelResult);
 
-        // 层遍历
-        readExcel.traverseNode(readExcel.rootNode,0);
-        System.out.println("readExcel.levelResult = " + readExcel.levelResult);
+        readExcel.createResList(readExcel.rootNode);
+        AtomicReference<String> strRes = new AtomicReference<>("");
+        readExcel.resultList.forEach(node-> System.out.println("node.getName()+ \" _ \" +node.getType() = " + node.getName()+ " _ " +node.getType()));
+        readExcel.resultList.forEach(node-> strRes.set(strRes + " " + node.getName() + " " + node.getType() + "\\r\\n"));
+
+
+        File file = new File("C:\\Users\\Administrator\\Desktop\\outputTest.txt");
+
+        TestDemo.method2("C:\\Users\\Administrator\\Desktop\\outputTest.txt",strRes.toString());
     }
 
 }
